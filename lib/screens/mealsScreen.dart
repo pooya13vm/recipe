@@ -3,12 +3,10 @@ import 'package:recipe/models/meal.dart';
 import 'package:recipe/widgets/meal_item.dart';
 
 class MealsScreen extends StatelessWidget {
-  const MealsScreen(
-      {super.key, this.title, required this.meals, required this.onToggleFav});
+  const MealsScreen({super.key, this.title, required this.meals});
 
   final String? title;
   final List<Meal> meals;
-  final void Function(Meal meal) onToggleFav;
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +14,6 @@ class MealsScreen extends StatelessWidget {
         itemCount: meals.length,
         itemBuilder: (ctx, index) => MealItem(
               meal: meals[index],
-              onToggleFav: onToggleFav,
             ));
 
     if (meals.isEmpty) {

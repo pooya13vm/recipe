@@ -1,24 +1,19 @@
 import 'package:flutter/material.dart';
 // import 'package:recipe/screens/tabs.dart';
 // import 'package:recipe/widgets/main_drawer.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:recipe/providers/filter_provider.dart';
 
-enum Filter {
-  glutenFree,
-  lactoseFree,
-  vegetarian,
-  vegan,
-}
-
-class FilterScreen extends StatefulWidget {
-  const FilterScreen({super.key, required this.currentFilters});
-
-  final Map<Filter, bool> currentFilters;
+class FilterScreen extends ConsumerStatefulWidget {
+  const FilterScreen({
+    super.key,
+  });
 
   @override
-  State<FilterScreen> createState() => _FilterScreenState();
+  ConsumerState<FilterScreen> createState() => _FilterScreenState();
 }
 
-class _FilterScreenState extends State<FilterScreen> {
+class _FilterScreenState extends ConsumerState<FilterScreen> {
   var glutenFree = false;
   var lactoseFree = false;
   var vegetarian = false;
@@ -27,10 +22,11 @@ class _FilterScreenState extends State<FilterScreen> {
   @override
   void initState() {
     super.initState();
-    glutenFree = widget.currentFilters[Filter.glutenFree]!;
-    lactoseFree = widget.currentFilters[Filter.lactoseFree]!;
-    vegetarian = widget.currentFilters[Filter.vegetarian]!;
-    vegan = widget.currentFilters[Filter.vegan]!;
+    final activeFilters = ref.read(filtersProvider);
+    glutenFree = activeFilters[Filter.glutenFree]!;
+    lactoseFree = activeFilters[Filter.lactoseFree]!;
+    vegetarian = activeFilters[Filter.vegetarian]!;
+    vegan = activeFilters[Filter.vegan]!;
   }
 
   void setGluten(bool state) {
@@ -63,25 +59,16 @@ class _FilterScreenState extends State<FilterScreen> {
       appBar: AppBar(
         title: const Text("Filter"),
       ),
-      // drawer: MainDrawer(onSelectedScreen: (identifier) {
-      //   Navigator.of(context).pop();
-      //   if (identifier == "Meals") {
-      //     Navigator.of(context).pushReplacement(
-      //       MaterialPageRoute(builder: (ctx) => const TabScreen()),
-      //     );
-      //   }
-      // }),
       body: WillPopScope(
         onWillPop: () async {
-          Navigator.of(context).pop(
-            {
-              Filter.glutenFree: glutenFree,
-              Filter.lactoseFree: lactoseFree,
-              Filter.vegetarian: vegetarian,
-              Filter.vegan: vegan,
-            },
-          );
-          return false;
+          ref.read(filtersProvider.notifier).setAllFilters({
+            Filter.glutenFree: glutenFree,
+            Filter.lactoseFree: lactoseFree,
+            Filter.vegetarian: vegetarian,
+            Filter.vegan: vegan,
+          });
+          // Navigator.of(context).pop();
+          return true;
         },
         child: Column(children: [
           FilterItem(
@@ -101,12 +88,12 @@ class FilterItem extends StatelessWidget {
   const FilterItem(
       {super.key,
       required this.value,
-      required this.setValue,
-      required this.title});
+      required this.title,
+      required this.setValue});
 
   final bool value;
-  final void Function(bool isChecked) setValue;
   final String title;
+  final void Function(bool) setValue;
 
   @override
   Widget build(BuildContext context) {

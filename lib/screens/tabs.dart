@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:recipe/data/dummy_data.dart';
+// import 'package:recipe/data/dummy_data.dart';
 import 'package:recipe/models/meal.dart';
 import 'package:recipe/screens/categoriesScreen.dart';
 import 'package:recipe/screens/filtersScreen.dart';
 import 'package:recipe/screens/mealsScreen.dart';
 import 'package:recipe/widgets/main_drawer.dart';
+//importing providers:
+import 'package:recipe/providers/meals_provider.dart';
+import 'package:recipe/providers/filter_provider.dart';
+import 'package:recipe/providers/favorites_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class TabScreen extends StatefulWidget {
+class TabScreen extends ConsumerStatefulWidget {
   const TabScreen({super.key});
 
   @override
-  State<TabScreen> createState() => _TabScreenState();
+  ConsumerState<TabScreen> createState() => _TabScreenState();
 }
 
 // it is a test for github
-class _TabScreenState extends State<TabScreen> {
-  final List<Meal> favoriteList = [];
-  final List<Meal> mainList = [];
+class _TabScreenState extends ConsumerState<TabScreen> {
+  // final List<Meal> favoriteList = [];
+  // final List<Meal> mainList = [];
   Map<Filter, bool> selectedFilters = {
     Filter.glutenFree: false,
     Filter.lactoseFree: false,
@@ -24,23 +29,11 @@ class _TabScreenState extends State<TabScreen> {
     Filter.vegan: false,
   };
 
-  void toggleFavorite(Meal meal) {
-    if (favoriteList.contains(meal)) {
-      setState(() {
-        favoriteList.remove(meal);
-      });
-    } else {
-      setState(() {
-        favoriteList.add(meal);
-      });
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    mainList.addAll(dummyMeals);
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   mainList.addAll(dummyMeals);
+  // }
 
   int _selectedPageIndex = 0;
   void _selectPage(int index) {
@@ -51,8 +44,11 @@ class _TabScreenState extends State<TabScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // states
+    final mainList = ref.watch(filteredMealProvider);
+    final favoriteList = ref.watch(favoritesProvider);
+
     Widget activePage = CategoriesScreen(
-      onToggleFav: toggleFavorite,
       mainList: mainList,
     );
 
@@ -60,43 +56,42 @@ class _TabScreenState extends State<TabScreen> {
       activePage = MealsScreen(
         title: "",
         meals: favoriteList,
-        onToggleFav: toggleFavorite,
       );
     }
 
     void _setScreen(String filterItem) async {
       Navigator.of(context).pop();
       if (filterItem == "Filters") {
-        final result = await Navigator.of(context).push<Map<Filter, bool>>(
+        await Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (ctx) => FilterScreen(currentFilters: selectedFilters),
+            builder: (ctx) => const FilterScreen(),
           ),
         );
+        final activeFilters = ref.watch(filtersProvider);
+        // setState(() {
+        //   selectedFilters = result ?? selectedFilters;
+        // });
 
-        setState(() {
-          selectedFilters = result ?? selectedFilters;
-        });
-
-        if (result?[Filter.glutenFree] == true) {
-          setState(() {
-            mainList.removeWhere((item) => item.isGlutenFree == false);
-          });
-        }
-        if (result?[Filter.lactoseFree] == true) {
-          setState(() {
-            mainList.removeWhere((item) => item.isLactoseFree == false);
-          });
-        }
-        if (result?[Filter.vegetarian] == true) {
-          setState(() {
-            mainList.removeWhere((item) => item.isVegetarian == false);
-          });
-        }
-        if (result?[Filter.vegan] == true) {
-          setState(() {
-            mainList.removeWhere((item) => item.isVegan == false);
-          });
-        }
+        // if (activeFilters[Filter.glutenFree] == true) {
+        //   setState(() {
+        //     mainList.removeWhere((item) => item.isGlutenFree == false);
+        //   });
+        // }
+        // if (activeFilters[Filter.lactoseFree] == true) {
+        //   setState(() {
+        //     mainList.removeWhere((item) => item.isLactoseFree == false);
+        //   });
+        // }
+        // if (activeFilters[Filter.vegetarian] == true) {
+        //   setState(() {
+        //     mainList.removeWhere((item) => item.isVegetarian == false);
+        //   });
+        // }
+        // if (activeFilters[Filter.vegan] == true) {
+        //   setState(() {
+        //     mainList.removeWhere((item) => item.isVegan == false);
+        //   });
+        // }
       }
     }
 
